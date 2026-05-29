@@ -23,6 +23,13 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key\InMemory;
+
+
 /**
  * PainelController
  *
@@ -69,5 +76,59 @@ class PainelController extends AbstractController
             ->getResult();
 
         return $this->json($senhas);
+    }
+    #[Route('/{publicId:painel}/voz/{senha}', name: 'voz', methods: ['GET'])]
+    public function voz(
+      Painel $painel,
+      PainelSenha $senha,
+      HttpClientInterface $http,
+      #[Autowire('%env(HU_SPEAKER_URL)%')] string $huUrl,
+      #[Autowire('%env(HU_SPEAKER_JWT_SECRET)%')] string $huSecret,
+    ): Response {
+        // segurança: a senha tem que pertencer à unidade do painel
+        if ($senha->getUnidade()?->getId() !== $painel->getUnidade()?->getId()) {
+            throw $this->createNotFoundException();
+        }
+
+        // 1) monta o texto. Soletra a senha p/ o pré-processador do Piper
+        //    transformar cada dígito em palavra ("A001" -> "A 0 0 1" -> "A zero zero um")
+        $soletrada = trim((string) preg_replace('/(.)/u', '$1 ', $senha->getSenhaFormatada()));
+        $texto = sprintf(
+            'Senha %s. %s %s.',
+            $soletrada,
+            $senha->getLocal(),
+            trim((string) preg_replace('/(.)/u', '$1 ', str_pad((string) $senha->getNumeroLocal(), 2, '0', STR_PAD_LEFT)))
+        );
+
+        // 2) assina o JWT HS256 (HU-Speaker exige claims sub + exp)
+        $config = Configuration::forSymmetricSigner(new Sha256(), InMemory::plainText($huSecret));
+        $now = new \DateTimeImmutable();
+        $jwt = $config->builder()
+            ->relatedTo('novosga-service')              // sub
+            ->issuedAt($now)
+            ->expiresAt($now->modify('+2 minutes'))     // exp
+            ->withClaim('source_system', 'novosga')
+            ->withClaim('actor_id', (string) $senha->getId())
+            ->withClaim('actor_name', $senha->getNomeCliente() ?? '')
+            ->getToken($config->signer(), $config->signingKey())
+            ->toString();
+
+        $headers = ['Authorization' => 'Bearer ' . $jwt];
+
+        // 3) sintetiza
+        $syn = $http->request('POST', $huUrl . '/speak/synthesize', [
+            'headers' => $headers,
+            'json' => ['text' => $texto, 'language' => 'pt_BR', 'length_scale' => 1.0],
+        ])->toArray();
+
+        // 4) baixa o wav e repassa (proxy) — segredo nunca sai do servidor
+        $wav = $http->request('GET', $huUrl . '/speak/download/' . $syn['id'], [
+            'headers' => $headers,
+        ])->getContent();
+
+        return new Response($wav, 200, [
+            'Content-Type' => 'audio/wav',
+            'Cache-Control' => 'no-store',
+        ]);
     }
 }

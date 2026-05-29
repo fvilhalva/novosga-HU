@@ -158,6 +158,7 @@
                 });
                 // Alert sound
                 this.playAlert();
+                this.speak();
             },
 
             playAlert() {
@@ -205,6 +206,19 @@
                     });
                 } catch (e) {
                     console.warn('[painel] playAlert:', e.message);
+                }
+            },
+            speak() {
+                if (!this.featured) return;
+                try {
+                    const url = this.baseUrl + '/voz/' + this.featured.id;
+                    const audio = new Audio(url);
+                    // toca depois do bip (~0.5s) para não sobrepor
+                    setTimeout(() => {
+                        audio.play().catch((e) => console.warn('[painel] speak:', e.message));
+                    }, 600);
+                } catch (e) {
+                    console.warn('[painel] speak:', e.message);
                 }
             },
 
