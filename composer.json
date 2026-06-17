@@ -22,6 +22,7 @@
         "doctrine/doctrine-bundle": "^2.18.2",
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6.2",
+        "firebase/php-jwt": "^7.1",
         "league/oauth2-server-bundle": "^0.9.1",
         "novosga/attendance-bundle": "2.3.x-dev",
         "novosga/core": "2.3.x-dev",

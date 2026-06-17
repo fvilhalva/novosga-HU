@@ -79,6 +79,11 @@ services:
         factory: ['App\Infrastructure\StorageFactory', 'createStorage']
         arguments: ['@doctrine.orm.entity_manager', '@Psr\Clock\ClockInterface']
 
+    App\Service\HuSpeakerClient:
+        arguments:
+            $baseUrl: '%env(HU_SPEAKER_URL)%'
+            $jwtSecret: '%env(HU_SPEAKER_JWT_SECRET)%'
+
 
 when@test:
     parameters:
