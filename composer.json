@@ -2,7 +2,13 @@
     "name": "novosga/novosga",
     "type": "project",
     "description": "Sistema de Gerenciamento de Atendimento",
-    "keywords": ["sga", "atendimento", "fila", "gerenciamento", "controle"],
+    "keywords": [
+        "sga",
+        "atendimento",
+        "fila",
+        "gerenciamento",
+        "controle"
+    ],
     "homepage": "http://www.novosga.org",
     "license": "MIT",
     "authors": [
@@ -22,7 +28,7 @@
         "slim/views": "~0.1",
         "twig/twig": "~1.18",
         "twig/extensions": "~1.2",
-        "doctrine/orm": "~2.5",
+        "doctrine/orm": "2.5.*",
         "bshaffer/oauth2-server-php": "~1.7"
     },
     "suggest": {

@@ -1,0 +1,5 @@
+vendor/
+var/cache/
+var/log/
+.git/
+config/database.php

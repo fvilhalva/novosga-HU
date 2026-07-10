@@ -1,0 +1,29 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8081:80"
+    volumes:
+      - ./:/var/www/html
+      - composer_cache:/root/.composer/cache
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: novosga
+      POSTGRES_USER: novosga
+      POSTGRES_PASSWORD: novosga
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  composer_cache:
