@@ -1,67 +1,63 @@
+# Novo SGA
 
-![NovoSGA](doc/images/github-banner.png)
+[![Packagist](http://img.shields.io/packagist/v/novosga/novosga.svg)](https://packagist.org/packages/novosga/novosga)
+[![Packagist](http://img.shields.io/packagist/dt/novosga/novosga.svg)](https://packagist.org/packages/novosga/novosga)
+[![Packagist](http://img.shields.io/packagist/dm/novosga/novosga.svg)](https://packagist.org/packages/novosga/novosga)
+[![Packagist](http://img.shields.io/packagist/dd/novosga/novosga.svg)](https://packagist.org/packages/novosga/novosga)
 
-# NovoSGA
+Sistema de Gerenciamento de Atendimento adaptável para grandes e pequenas organizações.
 
-![stars](https://img.shields.io/github/stars/novosga/novosga)
-![forks](https://img.shields.io/github/forks/novosga/novosga)
-![contributors](https://img.shields.io/github/contributors/novosga/novosga)
-![ci](https://img.shields.io/github/actions/workflow/status/novosga/novosga/ci.yaml)
-![license](https://img.shields.io/github/license/novosga/novosga)
-![sponsors](https://img.shields.io/github/sponsors/novosga)
+Visite o site para maiores informações: http://novosga.org
 
+## Instalação
 
-Sistema de gerenciamento de senha de atendimento desenvolvido pelos [colabores](https://github.com/novosga/novosga/graphs/contributors) da comunidade NovoSGA e mantido por [Mangati](https://mangati.com).
+Instalação feita via [Composer](http://getcomposer.org/)
 
+*Produção*
 
-## Sobre
-
-A primeira versão do NovoSGA surgiu em 2012, criado por [Rogério Lino](https://github.com/rogeriolino), como uma alternativa mais moderna ao sistema [SGA Livre](https://softwarepublico.gov.br/social/sga-livre) desenvolvido pela DATAPREV.
-
-Com traduções para Inglês, Espanhol e Português, o NovoSGA está presente em vários países ao redor do mundo e por ser gratuito é amplamente difundido entre órgãos públicos, estatais e empresas de diversos tamanhos.
-
-
-## Primeiros passos
-
-Para ajuda na instalação e utilização é possível consultar a documentação oficial: https://novosga.org/docs/.
-
-Demais dúvidas podem ser enviadas para o fórum do projeto (https://discuss.novosga.org/) ou no grupo oficial do Telegram (https://t.me/novosga).
-
-
-## Contribuindo
-
-Muito obrigado por considerar contribuir para o projeto. O guia de contribução pode ser encontrado na [documentação do NovoSGA](https://novosga.org/docs/#/2.1/contributing).
-
-
-## Doações
-
-Você aprecia o NovoSGA ou já o utiliza em sua empresa ou em projetos com clientes? Considere se tornar patrocinador e ganhar visibilidade ao ter sua marca nas páginas oficiais do projeto, além de contribuir para a sustentabilidade de uma ferramenta open-source que beneficia milhares de usuários.
-
-Doações pontuais também são muito bem-vindas! Qualquer quantia ajuda a manter o NovoSGA gratuito e acessível para todos.
-
-Apoie este projeto visitando: https://github.com/sponsors/novosga e faça sua contribuição.
-
-
-## Licença
-
+```sh
+php composer.phar create-project novosga/novosga novosga "1.*"
 ```
-Copyright (c) 2012-present Rogerio Lino
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is furnished
-to do so, subject to the following conditions:
+*Ou a versão de desenvolvimento*
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+```sh
+git clone https://github.com/novosga/novosga
+cd novosga
+php composer.phar install
 ```
+Note: After installation remember to change the owner of the novosga directory: Example su chown apache:apache novosga -R
+
+## Tecnologia
+
+A aplicação web escrita em PHP utilizando as melhores práticas de desenvolvimento.
+
+- PHP 5.4
+- HTML5
+- CSS3
+- [Doctrine PHP 2.4](http://www.doctrine-project.org/projects/orm.html)
+- [jQuery 1.9](http://jquery.com/)
+- [Twitter Bootstrap 3](http://getbootstrap.com/)
+- [Highcharts](http://www.highcharts.com/)
+
+Testado no seguintes bancos:
+- [PostgreSQL](http://www.postgresql.org/)
+- [MySQL](http://www.mysql.org)
+
+
+## Demo
+
+Versão de desenvolvimento disponível online através do link: http://novosga.org/demo
+
+- **Usuário**: admin
+- **Senha**: 123456
+
+## Contribuições
+
+Gostou dessa nova versão? Necessita de alguma funcionalidade ou quer apenas contribuir para manter o projeto a todo vapor?
+
+Entre em contato via [fórum](http://novosga.org/forum/), [blog](http://novosga.org/blog/) ou [issues](https://github.com/novosga/novosga/issues/)!
+
+**Autor**: [Rogério Alencar Lino Filho](http://rogeriolino.com/)
+
+**Colaboradores**: https://github.com/novosga/novosga/contributors

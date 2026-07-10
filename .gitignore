@@ -1,36 +1,8 @@
-.vscode
-/public/uploads/*
-!/public/uploads/.gitkeep
-
-###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
-/vendor/
-###< symfony/framework-bundle ###
-
-###> phpunit/phpunit ###
-/phpunit.xml
-/.phpunit.cache/
-###< phpunit/phpunit ###
-
-###> symfony/asset-mapper ###
-/public/assets/
-/assets/vendor/
-###< symfony/asset-mapper ###
-
-###> league/oauth2-server-bundle ###
-/config/jwt/*.pem
-###< league/oauth2-server-bundle ###
-
-###> phpstan/phpstan ###
-phpstan.neon
-###< phpstan/phpstan ###
-
-###> squizlabs/php_codesniffer ###
-/.phpcs-cache
-/phpcs.xml
-###< squizlabs/php_codesniffer ###
+vendor/
+composer.lock
+composer.phar
+nbproject/
+config/
+var/
+modules/*
+!modules/sga/

@@ -9,11 +9,7 @@ body {
     padding: 15px;
     margin: 0 auto;
 }
-
-.form-signin .form-signin-heading {
-    margin-bottom: 1rem;
-}
-
+.form-signin .form-signin-heading,
 .form-signin .checkbox {
     margin-bottom: 10px;
 }
@@ -50,5 +46,10 @@ body {
 #logo {
     width: 270px;
     height: 108px;
-    text-align: center;
+    margin-bottom: 30px;
+    background-image: url(../images/novosga-login.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    text-indent: -999px;
 }
