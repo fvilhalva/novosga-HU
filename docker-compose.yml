@@ -10,6 +10,9 @@ services:
       - composer_cache:/root/.composer/cache
     depends_on:
       - db
+    networks:
+      - default      # rede interna: fala com o Postgres (db)
+      - sga-net      # rede compartilhada: fala com o HU-Speaker
     restart: unless-stopped
 
   db:
@@ -22,7 +25,13 @@ services:
       - "5433:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    networks:
+      - default
     restart: unless-stopped
+
+networks:
+  sga-net:
+    external: true   # a mesma rede externa usada pelo HU-Speaker
 
 volumes:
   db_data:
