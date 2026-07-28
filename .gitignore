@@ -6,3 +6,4 @@ config/
 var/
 modules/*
 !modules/sga/
+.env

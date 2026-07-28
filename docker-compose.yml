@@ -10,6 +10,11 @@ services:
       - composer_cache:/root/.composer/cache
     depends_on:
       - db
+    environment:
+      # Segredo compartilhado com o HU-Speaker para assinar os tokens JWT do painel.
+      # Definido via variavel de ambiente do host (NAO versionar o valor real).
+      # Deve ser IDENTICO ao JWT_SECRET_KEY do .env do HU-Speaker.
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY:-changeme-set-in-host-env}"
     networks:
       - default      # rede interna: fala com o Postgres (db)
       - sga-net      # rede compartilhada: fala com o HU-Speaker
