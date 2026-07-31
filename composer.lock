@@ -2028,12 +2028,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/novosga/core.git",
-                "reference": "0836bd4ae2ccf76800c2ed8b82f6c158b5cefd2c"
+                "reference": "8b5a9b7bc7f44d1264bdf477088f46a0be18d2c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/novosga/core/zipball/0836bd4ae2ccf76800c2ed8b82f6c158b5cefd2c",
-                "reference": "0836bd4ae2ccf76800c2ed8b82f6c158b5cefd2c",
+                "url": "https://api.github.com/repos/novosga/core/zipball/8b5a9b7bc7f44d1264bdf477088f46a0be18d2c7",
+                "reference": "8b5a9b7bc7f44d1264bdf477088f46a0be18d2c7",
                 "shasum": ""
             },
             "require": {
@@ -2072,7 +2072,7 @@
                 "issues": "https://github.com/novosga/core/issues",
                 "source": "https://github.com/novosga/core/tree/v2.3"
             },
-            "time": "2026-04-09T10:43:22+00:00"
+            "time": "2026-06-21T18:11:08+00:00"
         },
         {
             "name": "novosga/customers-bundle",
@@ -2124,7 +2124,7 @@
                 "issues": "https://github.com/novosga/customers-bundle/issues",
                 "source": "https://github.com/novosga/customers-bundle/tree/v2.3"
             },
-            "time": "2026-04-07T13:29:36+00:00"
+            "time": "2026-04-30T14:15:05+00:00"
         },
         {
             "name": "novosga/monitor-bundle",
@@ -2132,12 +2132,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/novosga/monitor-bundle.git",
-                "reference": "23ac7aad9bf78ff3cbc76abae6cdc564a8071968"
+                "reference": "16f34ec05142f5354e3fb4288ade1a5ceb7d3220"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/novosga/monitor-bundle/zipball/23ac7aad9bf78ff3cbc76abae6cdc564a8071968",
-                "reference": "23ac7aad9bf78ff3cbc76abae6cdc564a8071968",
+                "url": "https://api.github.com/repos/novosga/monitor-bundle/zipball/16f34ec05142f5354e3fb4288ade1a5ceb7d3220",
+                "reference": "16f34ec05142f5354e3fb4288ade1a5ceb7d3220",
                 "shasum": ""
             },
             "require": {
@@ -2175,7 +2175,7 @@
                 "issues": "https://github.com/novosga/monitor-bundle/issues",
                 "source": "https://github.com/novosga/monitor-bundle/tree/v2.3"
             },
-            "time": "2026-04-07T13:29:31+00:00"
+            "time": "2026-05-20T16:02:14+00:00"
         },
         {
             "name": "novosga/panel-bundle",
@@ -2183,12 +2183,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/novosga/panel-bundle.git",
-                "reference": "bb1ea57879d8293f12094870976b54c612f7bff9"
+                "reference": "10b839599f9656b183756edc1cf49086dbff3b83"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/novosga/panel-bundle/zipball/bb1ea57879d8293f12094870976b54c612f7bff9",
-                "reference": "bb1ea57879d8293f12094870976b54c612f7bff9",
+                "url": "https://api.github.com/repos/novosga/panel-bundle/zipball/10b839599f9656b183756edc1cf49086dbff3b83",
+                "reference": "10b839599f9656b183756edc1cf49086dbff3b83",
                 "shasum": ""
             },
             "require": {
@@ -2228,7 +2228,7 @@
                 "issues": "https://github.com/novosga/panel-bundle/issues",
                 "source": "https://github.com/novosga/panel-bundle/tree/v2.3"
             },
-            "time": "2026-04-10T11:02:06+00:00"
+            "time": "2026-06-21T18:12:33+00:00"
         },
         {
             "name": "novosga/reports-bundle",
@@ -2236,18 +2236,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/novosga/reports-bundle.git",
-                "reference": "276568443a3c1324f6b90f097877cbe8516d729c"
+                "reference": "1595106e22247bb6d9879bce6fe7818550910bd0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/novosga/reports-bundle/zipball/276568443a3c1324f6b90f097877cbe8516d729c",
-                "reference": "276568443a3c1324f6b90f097877cbe8516d729c",
+                "url": "https://api.github.com/repos/novosga/reports-bundle/zipball/1595106e22247bb6d9879bce6fe7818550910bd0",
+                "reference": "1595106e22247bb6d9879bce6fe7818550910bd0",
                 "shasum": ""
             },
             "require": {
                 "doctrine/orm": "^3.2",
                 "novosga/core": "2.3.x-dev",
                 "php": ">=8.2",
+                "symfony/clock": "^7.4",
                 "symfony/form": "7.4.*",
                 "symfony/framework-bundle": "7.4.*",
                 "symfony/translation": "7.4.*",
@@ -2280,7 +2281,7 @@
                 "issues": "https://github.com/novosga/reports-bundle/issues",
                 "source": "https://github.com/novosga/reports-bundle/tree/v2.3"
             },
-            "time": "2026-04-07T13:29:38+00:00"
+            "time": "2026-06-22T12:38:58+00:00"
         },
         {
             "name": "novosga/scheduling-bundle",
@@ -2336,7 +2337,7 @@
                 "issues": "https://github.com/novosga/scheduling-bundle/issues",
                 "source": "https://github.com/novosga/scheduling-bundle/tree/v2.3"
             },
-            "time": "2026-04-09T12:21:08+00:00"
+            "time": "2026-04-30T14:11:13+00:00"
         },
         {
             "name": "novosga/settings-bundle",
@@ -2395,12 +2396,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/novosga/triage-bundle.git",
-                "reference": "4b463454d8e82703b1c5fa3b61bd08c88759c88b"
+                "reference": "96f5b20799a66d1a065991cc8ef66d641f35f455"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/novosga/triage-bundle/zipball/4b463454d8e82703b1c5fa3b61bd08c88759c88b",
-                "reference": "4b463454d8e82703b1c5fa3b61bd08c88759c88b",
+                "url": "https://api.github.com/repos/novosga/triage-bundle/zipball/96f5b20799a66d1a065991cc8ef66d641f35f455",
+                "reference": "96f5b20799a66d1a065991cc8ef66d641f35f455",
                 "shasum": ""
             },
             "require": {
@@ -2437,7 +2438,7 @@
                 "issues": "https://github.com/novosga/triage-bundle/issues",
                 "source": "https://github.com/novosga/triage-bundle/tree/v2.3"
             },
-            "time": "2026-04-07T13:29:29+00:00"
+            "time": "2026-05-01T13:42:44+00:00"
         },
         {
             "name": "novosga/users-bundle",
@@ -6890,16 +6891,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.38.1",
+            "version": "v1.38.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "14c5439eec4ccff081ac14eca2dc57feb2a66d92"
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/14c5439eec4ccff081ac14eca2dc57feb2a66d92",
-                "reference": "14c5439eec4ccff081ac14eca2dc57feb2a66d92",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
                 "shasum": ""
             },
             "require": {
@@ -6951,7 +6952,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.1"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.2"
             },
             "funding": [
                 {
@@ -6971,20 +6972,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-26T12:51:13+00:00"
+            "time": "2026-05-27T06:59:30+00:00"
         },
         {
             "name": "symfony/polyfill-php83",
-            "version": "v1.38.1",
+            "version": "v1.38.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php83.git",
-                "reference": "8339098cae28673c15cce00d80734af0453054e2"
+                "reference": "796a26abb75ce49f3a84433cd81bf1009d73d5f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/8339098cae28673c15cce00d80734af0453054e2",
-                "reference": "8339098cae28673c15cce00d80734af0453054e2",
+                "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/796a26abb75ce49f3a84433cd81bf1009d73d5f8",
+                "reference": "796a26abb75ce49f3a84433cd81bf1009d73d5f8",
                 "shasum": ""
             },
             "require": {
@@ -7031,7 +7032,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php83/tree/v1.38.1"
+                "source": "https://github.com/symfony/polyfill-php83/tree/v1.38.2"
             },
             "funding": [
                 {
@@ -7051,7 +7052,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-26T12:51:13+00:00"
+            "time": "2026-05-27T06:51:48+00:00"
         },
         {
             "name": "symfony/polyfill-php84",
@@ -9129,16 +9130,16 @@
         },
         {
             "name": "symfony/ux-icons",
-            "version": "v2.36.0",
+            "version": "v2.36.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/ux-icons.git",
-                "reference": "f413a434caeaab4b237d6970d424f125e2bc41cf"
+                "reference": "567f33ddffc25504788abc61977565381e424ada"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/ux-icons/zipball/f413a434caeaab4b237d6970d424f125e2bc41cf",
-                "reference": "f413a434caeaab4b237d6970d424f125e2bc41cf",
+                "url": "https://api.github.com/repos/symfony/ux-icons/zipball/567f33ddffc25504788abc61977565381e424ada",
+                "reference": "567f33ddffc25504788abc61977565381e424ada",
                 "shasum": ""
             },
             "require": {
@@ -9198,7 +9199,7 @@
                 "twig"
             ],
             "support": {
-                "source": "https://github.com/symfony/ux-icons/tree/v2.36.0"
+                "source": "https://github.com/symfony/ux-icons/tree/v2.36.1"
             },
             "funding": [
                 {
@@ -9218,7 +9219,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-03T05:13:59+00:00"
+            "time": "2026-06-16T05:43:46+00:00"
         },
         {
             "name": "symfony/ux-turbo",
@@ -9834,16 +9835,16 @@
         },
         {
             "name": "twig/twig",
-            "version": "v3.26.0",
+            "version": "v3.27.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "1fcae487b180d78e6351f4e0afa91f9eab96a2bc"
+                "reference": "ae2071bffb38f04847fc0864d730c94b9cb8ab74"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/1fcae487b180d78e6351f4e0afa91f9eab96a2bc",
-                "reference": "1fcae487b180d78e6351f4e0afa91f9eab96a2bc",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/ae2071bffb38f04847fc0864d730c94b9cb8ab74",
+                "reference": "ae2071bffb38f04847fc0864d730c94b9cb8ab74",
                 "shasum": ""
             },
             "require": {
@@ -9898,7 +9899,7 @@
             ],
             "support": {
                 "issues": "https://github.com/twigphp/Twig/issues",
-                "source": "https://github.com/twigphp/Twig/tree/v3.26.0"
+                "source": "https://github.com/twigphp/Twig/tree/v3.27.1"
             },
             "funding": [
                 {
@@ -9910,7 +9911,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-20T07:31:59+00:00"
+            "time": "2026-05-30T17:09:26+00:00"
         },
         {
             "name": "webmozart/assert",
