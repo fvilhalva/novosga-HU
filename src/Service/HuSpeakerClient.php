@@ -50,7 +50,7 @@ final class HuSpeakerClient
     /**
      * Passo 1: sintetiza o texto. Retorna o id da síntese.
      */
-    public function synthesize(string $text, float $lengthScale = 1.0): string
+    public function synthesize(string $text, float $lengthScale = 1.6): string
     {
         $response = $this->client->request('POST', $this->baseUrl . '/speak/synthesize', [
             'auth_bearer' => $this->token(),

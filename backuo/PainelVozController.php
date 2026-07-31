@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class PainelVozController
 {
-    #[Route('/painel/voz', name: 'painel_voz', methods: ['GET'])]
+    #[Route('/painel/voz', name: 'painel_voz', methods: ['GET'], priority: 10)]
     public function voz(Request $request, HuSpeakerClient $speaker): Response
     {
         $senha = (string) $request->query->get('senha', '');
