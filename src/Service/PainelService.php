@@ -2,15 +2,6 @@
 
 declare(strict_types=1);
 
-/*
- * This file is part of the NovoSGA project.
- *
- * (c) Rogerio Lino <rogeriolino@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace App\Service;
 
 use App\Entity\Painel;
@@ -23,13 +14,9 @@ use Novosga\Service\PainelServiceInterface;
 use Novosga\Settings\PainelSettings;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 use Symfony\Component\Uid\Uuid;
 
-/**
- * PainelService
- *
- * @author Rogerio Lino <rogeriolino@gmail.com>
- */
 class PainelService implements PainelServiceInterface
 {
     private const SETTINGS_NAMESPACE = 'novosga.panel';
@@ -92,7 +79,17 @@ class PainelService implements PainelServiceInterface
     {
         $meta = $this->painelMetadataRepository->get($painel, self::SETTINGS_NAMESPACE, self::SETTINGS_NAME);
 
-        return $this->denormalizer->denormalize($meta?->getValue(), PainelSettings::class);
+        $value = $meta?->getValue();
+
+        if (null === $value) {
+            return new PainelSettings();
+        }
+
+        try {
+            return $this->denormalizer->denormalize($value, PainelSettings::class);
+        } catch (NotNormalizableValueException $e) {
+            return new PainelSettings();
+        }
     }
 
     public function saveSettings(PainelInterface $painel, PainelSettings $settings): void
