@@ -183,6 +183,47 @@ FROM legado.usu_serv us;
 -- -----------------------------------------------------------------------------
 
 -- -----------------------------------------------------------------------------
+-- 10.5) REMOVER MICROSSEGUNDOS DAS COLUNAS DE AUDITORIA
+--     As colunas created_at/updated_at/deleted_at da 2.3 são timestamp(6) e têm
+--     DEFAULT now(). Como inserimos via SQL sem preenchê-las, o now() gravou
+--     valores COM microssegundos (ex.: 18:13:03.66729). As entidades da 2.3 leem
+--     essas colunas como DateTimeImmutable no formato 'Y-m-d H:i:s' (sem micros),
+--     o que causa erro 500 ("Could not convert database value ...") já no login.
+--     Truncamos para segundos em todas as colunas timestamp das tabelas migradas.
+-- -----------------------------------------------------------------------------
+DO $$
+DECLARE r record;
+BEGIN
+  FOR r IN
+    SELECT table_name, column_name FROM information_schema.columns
+    WHERE table_schema='public' AND datetime_precision=6 AND data_type LIKE 'timestamp%'
+      AND table_name IN ('unidades','prioridades','locais','servicos','perfis',
+                         'departamentos','usuarios','lotacoes',
+                         'servicos_unidades','servicos_usuarios')
+  LOOP
+    EXECUTE format(
+      'UPDATE public.%I SET %I = date_trunc(''second'', %I) WHERE %I IS NOT NULL AND %I <> date_trunc(''second'', %I)',
+      r.table_name, r.column_name, r.column_name, r.column_name, r.column_name, r.column_name);
+  END LOOP;
+END $$;
+
+-- -----------------------------------------------------------------------------
+-- 10.6) CONTADORES DE SENHA (por unidade + serviço)
+--     Na 2.3 o contador é por (unidade_id, servico_id) e a emissão de senha faz
+--     UPDATE contador ... WHERE numero = <atual>; se a linha não existir, o app
+--     lança "Error updating ticket counter" na Triagem. Normalmente a linha é
+--     criada ao adicionar o serviço à unidade (UnidadeService: numero =
+--     numero_inicial). Como inserimos os vínculos via SQL, semeamos aqui.
+-- -----------------------------------------------------------------------------
+INSERT INTO public.contador (unidade_id, servico_id, numero)
+SELECT su.unidade_id, su.servico_id, COALESCE(su.numero_inicial, 1)
+FROM public.servicos_unidades su
+WHERE NOT EXISTS (
+    SELECT 1 FROM public.contador c
+    WHERE c.unidade_id = su.unidade_id AND c.servico_id = su.servico_id
+);
+
+-- -----------------------------------------------------------------------------
 -- 11) CORRIGIR SEQUENCES (porque inserimos IDs explícitos)
 --     Sem isso, o próximo INSERT pela aplicação colide com IDs já usados.
 -- -----------------------------------------------------------------------------
