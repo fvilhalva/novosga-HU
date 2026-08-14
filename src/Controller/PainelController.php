@@ -93,15 +93,16 @@ class PainelController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        // 1) monta o texto. Soletra a senha p/ o pré-processador do Piper
-        //    transformar cada dígito em palavra ("A001" -> "A 0 0 1" -> "A zero zero um")
+        // 1) monta o texto falado
         $soletrada = trim((string) preg_replace('/(.)/u', '$1 ', $senha->getSenhaFormatada()));
-        $texto = sprintf(
-            'Senha %s. %s %s.',
-            $soletrada,
-            $senha->getLocal(),
-            trim((string) preg_replace('/(.)/u', '$1 ', str_pad((string) $senha->getNumeroLocal(), 2, '0', STR_PAD_LEFT)))
-        );
+        $numeroLocal = trim((string) preg_replace('/(.)/u', '$1 ', str_pad((string) $senha->getNumeroLocal(), 2, '0', STR_PAD_LEFT)));
+        $nome = trim((string) ($senha->getNomeCliente() ?? ''));
+
+        if ($nome !== '') {
+            $texto = sprintf('Atenção! %s. Senha %s. Compareça ao %s %s.', $nome, $soletrada, $senha->getLocal(), $numeroLocal);
+        } else {
+            $texto = sprintf('Atenção pacientes! Senha %s. Compareça ao %s %s.', $soletrada, $senha->getLocal(), $numeroLocal);
+        }
 
         // 2) assina o JWT HS256 (HU-Speaker exige claims sub + exp)
         $config = Configuration::forSymmetricSigner(new Sha256(), InMemory::plainText($huSecret));
@@ -121,7 +122,7 @@ class PainelController extends AbstractController
         // 3) sintetiza
         $syn = $http->request('POST', $huUrl . '/speak/synthesize', [
             'headers' => $headers,
-            'json' => ['text' => $texto, 'language' => 'pt_BR', 'length_scale' => 1.0],
+            'json' => ['text' => $texto, 'language' => 'pt_BR', 'length_scale' => 1.6],
         ])->toArray();
 
         // 4) baixa o wav e repassa (proxy) — segredo nunca sai do servidor
