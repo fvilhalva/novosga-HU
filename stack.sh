@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 #
-# estagio.sh - orquestra NovoSGA 2.3 + HU-Speaker (chamada por voz)
+# stack.sh - orquestra NovoSGA 2.3 + HU-Speaker (chamada por voz)
 #
 # Uso:
-#   ./estagio.sh setup [--migrate | --fresh]   # instala tudo do zero
-#   ./estagio.sh start                         # liga tudo (infra + app)
-#   ./estagio.sh stop                          # desliga tudo
-#   ./estagio.sh restart                       # stop + start
-#   ./estagio.sh status                        # o que está rodando
-#   ./estagio.sh check                         # testa a integração de voz
-#   ./estagio.sh help
+#   ./stack.sh setup [--migrate | --fresh]   # instala tudo do zero
+#   ./stack.sh start                         # liga tudo (infra + app)
+#   ./stack.sh stop                          # desliga tudo
+#   ./stack.sh restart                       # stop + start
+#   ./stack.sh status                        # o que está rodando
+#   ./stack.sh check                         # testa a integração de voz
+#   ./stack.sh reset [-y]                     # ZERA o banco (down -v) - destrutivo
+#   ./stack.sh help
 #
-# setup --migrate : popula o banco migrando os dados da 1.x (backup_novosga.sql)
+# setup --migrate : popula o banco com o snapshot 2.3 já migrado (dados_migrados.sql)
 # setup --fresh   : popula com instalação limpa (novosga:install)
 # setup (sem flag): prepara tudo, mas não popula dados (você escolhe depois)
 #
@@ -73,7 +74,7 @@ wait_db() {
 # --------------------------------------------------------------------------
 check_secret() {
   local a b
-  a=$(grep -hE '^HU_SPEAKER_JWT_SECRET=' "$NOVOSGA_DIR/.env.local" "$NOVOSGA_DIR/.env" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"'"'"' \r')
+  a=$(grep -hE '^HU_SPEAKER_JWT_SECRET=' "$NOVOSGA_DIR/.env" "$NOVOSGA_DIR/.env.local" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"'"'"' \r')
   b=$(grep -hE '^JWT_SECRET_KEY='       "$HU_DIR/.env" 2>/dev/null           | tail -1 | cut -d= -f2- | tr -d '"'"'"' \r')
   if [ -z "$a" ] || [ -z "$b" ]; then
     warn "Segredo JWT não configurado dos dois lados (HU_SPEAKER_JWT_SECRET / JWT_SECRET_KEY)."
@@ -113,7 +114,7 @@ setup_novosga() {
   if ! grep -qs "5434\|:${DB_PORT}/" .env.local 2>/dev/null; then
     log "Escrevendo .env.local (DATABASE_URL na porta ${DB_PORT})"
     {
-      echo '# gerado por estagio.sh - overrides locais (não versionado)'
+      echo '# gerado por stack.sh - overrides locais (não versionado)'
       echo "DATABASE_URL=\"postgresql://${DB_USER}:${DB_PASS}@127.0.0.1:${DB_PORT}/${DB_NAME}?serverVersion=16&charset=utf8\""
     } >> .env.local
   else
@@ -134,11 +135,11 @@ setup_novosga() {
     ok "chaves JWT já existem"
   fi
 
-  # garante as variáveis do HU-Speaker no .env
-  grep -qs '^HU_SPEAKER_URL='        .env || echo "HU_SPEAKER_URL=${HU_URL}" >> .env
-  if ! grep -qs '^HU_SPEAKER_JWT_SECRET=' .env; then
+  # garante o segredo do HU-Speaker no .env.local (NÃO versionado; sobrepõe o
+  # placeholder do .env commitado). A URL já vem com default no .env.
+  if ! grep -qs '^HU_SPEAKER_JWT_SECRET=' .env.local; then
     local s; s=$(grep -hE '^JWT_SECRET_KEY=' "$HU_DIR/.env" 2>/dev/null | tail -1 | cut -d= -f2-)
-    [ -n "$s" ] && echo "HU_SPEAKER_JWT_SECRET=${s}" >> .env && warn "HU_SPEAKER_JWT_SECRET copiado do HU-Speaker"
+    [ -n "$s" ] && echo "HU_SPEAKER_JWT_SECRET=${s}" >> .env.local && warn "HU_SPEAKER_JWT_SECRET copiado do HU-Speaker para .env.local"
   fi
 
   wait_db
@@ -148,18 +149,14 @@ setup_novosga() {
 }
 
 populate_migrate() {
-  log "== Migração de dados 1.x -> 2.3 =="
+  log "== Carga de dados migrados (1.x -> 2.3) =="
   cd "$NOVOSGA_DIR"
   local users; users=$(psql_app -tAc "SELECT count(*) FROM usuarios" 2>/dev/null | tr -d ' \r' || echo 0)
-  if [ "${users:-0}" != "0" ]; then warn "Já existem usuários ($users) - pulando migração de dados."; return 0; fi
-  [ -f backup_novosga.sql ] || die "backup_novosga.sql não encontrado (dump da 1.x)"
-  log "Gerando legado.sql e carregando no schema 'legado'..."
-  sed 's/public\./legado./g' backup_novosga.sql > legado.sql
-  psql_app -c "DROP SCHEMA IF EXISTS legado CASCADE; CREATE SCHEMA legado; DO \$\$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='novosga') THEN CREATE ROLE novosga; END IF; END \$\$;"
-  psql_app < legado.sql >/dev/null
-  log "Rodando migracao_1x_para_2.3.sql (inclui fix de micros + seed de contadores)..."
-  psql_app -v ON_ERROR_STOP=1 < migracao_1x_para_2.3.sql >/dev/null
-  ok "dados migrados (login: admin / 123456)"
+  if [ "${users:-0}" != "0" ]; then warn "Já existem usuários ($users) - pulando carga de dados."; return 0; fi
+  [ -f dados_migrados.sql ] || die "dados_migrados.sql não encontrado"
+  log "Carregando dados_migrados.sql (snapshot já em formato 2.3)..."
+  psql_app -v ON_ERROR_STOP=1 < dados_migrados.sql >/dev/null
+  ok "dados carregados (login: admin / 123456)"
 }
 
 populate_fresh() {
@@ -175,7 +172,7 @@ cmd_setup() {
   case "${1:-}" in
     --migrate) populate_migrate ;;
     --fresh)   populate_fresh ;;
-    "")        warn "Sem --migrate/--fresh: banco vazio. Rode depois: ./estagio.sh setup --migrate" ;;
+    "")        warn "Sem --migrate/--fresh: banco vazio. Rode depois: ./stack.sh setup --migrate" ;;
     *)         die "opção inválida: $1 (use --migrate ou --fresh)" ;;
   esac
   check_secret || true
@@ -207,6 +204,22 @@ cmd_stop() {
   ok "Tudo parado"
 }
 
+cmd_reset() {
+  # Zera o ambiente do NovoSGA: derruba a infra E apaga o volume do Postgres.
+  # Uso típico: trocar de --fresh para --migrate num banco limpo.
+  local yes=0
+  case "${1:-}" in -y|--yes) yes=1 ;; esac
+  warn "Isto vai APAGAR o volume do Postgres (todos os dados locais do NovoSGA)."
+  if [ "$yes" -ne 1 ]; then
+    printf '\033[1;33m!!\033[0m Confirma? digite "sim" para continuar: '
+    local ans; read -r ans
+    [ "$ans" = "sim" ] || { log "cancelado (nada foi apagado)"; return 0; }
+  fi
+  log "Parando o app..."; ( cd "$NOVOSGA_DIR" && symfony server:stop >/dev/null 2>&1 || true )
+  log "Derrubando infra do NovoSGA + volume (down -v)..."; dc_novosga down -v
+  ok "Ambiente zerado. Rode: ./stack.sh setup --migrate (ou --fresh)"
+}
+
 cmd_status() {
   echo "== Containers =="
   dc_novosga ps 2>/dev/null | grep -viE 'obsolete|version attribute' || true
@@ -225,7 +238,7 @@ cmd_check() {
   log "Nível 2 - NovoSGA autentica e sintetiza (servidor->servidor)"
   check_secret || warn "segredo divergente - o teste abaixo deve falhar"
   local secret jwt resp
-  secret=$(grep -hE '^HU_SPEAKER_JWT_SECRET=' "$NOVOSGA_DIR/.env.local" "$NOVOSGA_DIR/.env" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"'"'"' \r')
+  secret=$(grep -hE '^HU_SPEAKER_JWT_SECRET=' "$NOVOSGA_DIR/.env" "$NOVOSGA_DIR/.env.local" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"'"'"' \r')
   jwt=$(SECRET="$secret" php -r '$s=getenv("SECRET");$b=fn($d)=>rtrim(strtr(base64_encode($d),"+/","-_"),"=");$h=$b(json_encode(["alg"=>"HS256","typ"=>"JWT"]));$n=time();$p=$b(json_encode(["sub"=>"novosga-service","source_system"=>"novosga","iat"=>$n,"exp"=>$n+120]));echo "$h.$p.".$b(hash_hmac("sha256","$h.$p",$s,true));')
   resp=$(curl -s -m 30 -X POST "${HU_URL}/speak/synthesize" -H "Authorization: Bearer $jwt" -H "Content-Type: application/json" -d '{"text":"teste de voz","language":"pt_BR","length_scale":1.0}')
   echo "  resposta: $resp"
@@ -244,6 +257,7 @@ case "${1:-help}" in
   restart) cmd_stop; cmd_start ;;
   status)  cmd_status ;;
   check)   cmd_check ;;
+  reset)   shift; cmd_reset "${1:-}" ;;
   help|-h|--help) usage ;;
-  *) die "comando desconhecido: $1 (use: setup|start|stop|restart|status|check|help)" ;;
+  *) die "comando desconhecido: $1 (use: setup|start|stop|restart|status|check|reset|help)" ;;
 esac

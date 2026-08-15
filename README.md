@@ -38,9 +38,9 @@ Em relação ao NovoSGA upstream, este fork inclui:
 | **Endpoint de voz do painel** | `src/Controller/PainelController.php` → rota `painel_voz` (`GET /{publicId}/voz/{senha}`) | Monta a frase, sintetiza no HU-Speaker (servidor→servidor) e faz **proxy** do WAV para o navegador. |
 | **Fiação de serviço** | `config/services.yaml` | Injeta `HU_SPEAKER_URL` e `HU_SPEAKER_JWT_SECRET` no `HuSpeakerClient`. |
 | **Variáveis de ambiente** | `.env` (bloco `hu-speaker`) | `HU_SPEAKER_URL`, `HU_SPEAKER_JWT_SECRET`. |
-| **Orquestrador** | `estagio.sh` | Sobe **NovoSGA + HU-Speaker + infra** com um comando (`setup/start/stop/status/check`). |
+| **Orquestrador** | `stack.sh` | Sobe **NovoSGA + HU-Speaker + infra** com um comando (`setup/start/stop/status/check`). |
 | **Documentação** | `docs/tutorial-execucao.md` | Passo a passo manual detalhado + solução de problemas reais. |
-| **Migração de dados 1.x** | `backup_novosga.sql`, `migracao_1x_para_2.3.sql` | Migra uma base NovoSGA 1.x para o modelo 2.3 (com fixes de microssegundos e seed de contadores). |
+| **Dados migrados 1.x** | `dados_migrados.sql` | Snapshot da base 1.x **já convertido** para o modelo 2.3 (com fixes de microssegundos e seed de contadores embutidos). |
 
 > **HU-Speaker é um projeto separado** (FastAPI + Piper), mantido no seu próprio
 > repositório. Este README cobre o lado NovoSGA e como orquestrar os dois juntos.
@@ -90,7 +90,7 @@ php -v && composer --version && symfony version && docker --version
 
 ## Estrutura esperada de pastas
 
-O `estagio.sh` procura o HU-Speaker em `../HU-Speaker` por padrão (ou no caminho
+O `stack.sh` procura o HU-Speaker em `../HU-Speaker` por padrão (ou no caminho
 apontado por `HU_SPEAKER_DIR`). Deixe os dois repositórios lado a lado:
 
 ```
@@ -105,19 +105,19 @@ Antes do primeiro `setup`, garanta que o HU-Speaker tenha um `.env` com
 
 ---
 
-## Execução com `estagio.sh` (recomendado)
+## Execução com `stack.sh` (recomendado)
 
-O `estagio.sh` orquestra tudo. **Ele exige o HU-Speaker presente** (ver estrutura
+O `stack.sh` orquestra tudo. **Ele exige o HU-Speaker presente** (ver estrutura
 de pastas acima) — sem ele, o `setup`/`start` aborta no check de pré-requisitos.
 
 ### Primeira vez (instalação do zero)
 
 ```bash
-chmod +x estagio.sh          # se necessário
+chmod +x stack.sh          # se necessário
 
-./estagio.sh setup --fresh   # instalação limpa
+./stack.sh setup --fresh   # instalação limpa
 # ou
-./estagio.sh setup --migrate # populando com dados migrados da 1.x
+./stack.sh setup --migrate # populando com dados migrados da 1.x
 ```
 
 O `setup` executa, em ordem:
@@ -138,32 +138,32 @@ O `setup` executa, em ordem:
 
 | Comando | Efeito |
 |---------|--------|
-| `./estagio.sh setup --fresh` | Instalação limpa via `novosga:install`. **Não** usa os dados da 1.x. |
-| `./estagio.sh setup --migrate` | Migra os dados da 1.x → 2.3 (carrega `backup_novosga.sql` no schema `legado` e roda `migracao_1x_para_2.3.sql`). Login final: **`admin` / `123456`**. |
-| `./estagio.sh setup` | Prepara tudo, mas deixa o banco **vazio** (você popula depois). |
+| `./stack.sh setup --fresh` | Instalação limpa via `novosga:install`. **Não** usa os dados da 1.x. |
+| `./stack.sh setup --migrate` | Carrega o snapshot 2.3 já migrado (`dados_migrados.sql`) no banco. Login final: **`admin` / `123456`**. |
+| `./stack.sh setup` | Prepara tudo, mas deixa o banco **vazio** (você popula depois). |
 
 > ⚠️ **Idempotência da migração:** o `--migrate` só popula se **não houver
 > usuários** no banco. Se você já rodou um `--fresh` antes (que cria o admin),
 > um `--migrate` posterior é **ignorado**. Para trocar de `--fresh` para
 > `--migrate`, zere o banco primeiro:
 > ```bash
-> ./estagio.sh stop
-> docker compose down -v      # apaga o volume do Postgres
-> ./estagio.sh setup --migrate
+> ./stack.sh reset            # apaga o volume do Postgres (pede confirmação)
+> ./stack.sh setup --migrate
 > ```
 
 ### Uso diário
 
 ```bash
-./estagio.sh start     # liga HU-Speaker + infra + app
-./estagio.sh stop      # desliga tudo
-./estagio.sh restart   # stop + start
-./estagio.sh status    # o que está rodando (containers + app Symfony)
-./estagio.sh check     # testa a integração de voz (ver abaixo)
-./estagio.sh help      # ajuda
+./stack.sh start     # liga HU-Speaker + infra + app
+./stack.sh stop      # desliga tudo
+./stack.sh restart   # stop + start
+./stack.sh status    # o que está rodando (containers + app Symfony)
+./stack.sh check     # testa a integração de voz (ver abaixo)
+./stack.sh reset     # ZERA o banco (down -v) — pede confirmação, ou -y p/ pular
+./stack.sh help      # ajuda
 ```
 
-### Validando a voz — `./estagio.sh check`
+### Validando a voz — `./stack.sh check`
 
 Testa a integração em dois níveis:
 
@@ -186,7 +186,7 @@ O script aceita overrides por variável de ambiente:
 Exemplo:
 
 ```bash
-HU_SPEAKER_DIR=~/projetos/HU-Speaker APP_PORT=8001 ./estagio.sh setup --fresh
+HU_SPEAKER_DIR=~/projetos/HU-Speaker APP_PORT=8001 ./stack.sh setup --fresh
 ```
 
 ---
@@ -227,19 +227,21 @@ symfony serve -d                       # http://localhost:8000
 
 ## Migração de dados 1.x → 2.3
 
-A cadeia de migração envolve **três arquivos**, nesta ordem:
+Os dados da base 1.x já foram convertidos para o modelo 2.3 e congelados num
+único arquivo: **`dados_migrados.sql`** (um dump `--data-only`). Ele carrega
+direto num banco 2.3 recém-instalado — sem schema `legado`, sem passo de
+transformação. Os fixes conhecidos da 2.3 já estão **embutidos** no snapshot:
+`created_at` sem microssegundos (senão dá **500 no login**) e a tabela
+`contador` semeada (senão dá **"Error updating ticket counter"** na Triagem).
 
-1. `backup_novosga.sql` — dump da base 1.x (os dados de origem).
-2. Um `sed 's/public\./legado./g'` gera `legado.sql`, carregado no schema `legado`.
-3. `migracao_1x_para_2.3.sql` — lê do schema `legado` e insere no modelo 2.3.
+O `stack.sh setup --migrate` roda as migrations (cria o schema) e depois
+carrega o `dados_migrados.sql`.
 
-O `migracao_1x_para_2.3.sql` **não popula sozinho** — ele é só o passo de
-transformação (`INSERT ... SELECT FROM legado.*`) e depende dos dados já
-carregados no schema `legado`. Ele também corrige dois problemas conhecidos da
-2.3: remove microssegundos dos `created_at` (senão dá **500 no login**) e semeia
-a tabela `contador` (senão dá **"Error updating ticket counter"** na Triagem).
-
-O `estagio.sh setup --migrate` automatiza toda essa cadeia.
+> **Regerar o snapshot** (só se surgir um dump 1.x novo): o dump cru
+> `backup_novosga.sql` e o script de transformação `migracao_1x_para_2.3.sql`
+> ficaram no histórico git. Recupere-os, carregue o dump num schema `legado`,
+> rode o script contra um banco 2.3 e faça `pg_dump --data-only --disable-triggers
+> --exclude-table=doctrine_migration_versions` do resultado.
 
 ---
 
@@ -253,7 +255,7 @@ O `estagio.sh setup --migrate` automatiza toda essa cadeia.
 | HU-Speaker: **"Piper model not found"** | Modelo `.onnx` ausente | Baixar o modelo e subir com `--build` (o `setup` faz isso) |
 | HU-Speaker não sobe: rede `sga-net` inexistente | Rede externa do compose | `docker network create sga-net` (o `setup` faz isso) |
 | `--migrate` "pulou" a migração | Já havia usuários no banco | `docker compose down -v` e rode o `--migrate` num banco zerado |
-| Login dá **500** (DateTimeImmutable) | `created_at` com microssegundos | Já tratado no `migracao_1x_para_2.3.sql` |
+| Login dá **500** (DateTimeImmutable) | `created_at` com microssegundos | Já tratado no `dados_migrados.sql` |
 
 ---
 
