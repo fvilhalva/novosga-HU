@@ -1,4 +1,5 @@
 <?php
+
 return array(
     "driver" => "pdo_pgsql",
     "host" => "db",
