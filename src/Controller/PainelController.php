@@ -23,13 +23,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
-
 
 /**
  * PainelController
@@ -82,11 +80,11 @@ class PainelController extends AbstractController
     }
     #[Route('/{publicId:painel}/voz/{senha}', name: 'voz', methods: ['GET'])]
     public function voz(
-      Painel $painel,
-      PainelSenha $senha,
-      HttpClientInterface $http,
-      #[Autowire('%env(HU_SPEAKER_URL)%')] string $huUrl,
-      #[Autowire('%env(HU_SPEAKER_JWT_SECRET)%')] string $huSecret,
+        Painel $painel,
+        PainelSenha $senha,
+        HttpClientInterface $http,
+        #[Autowire('%env(HU_SPEAKER_URL)%')] string $huUrl,
+        #[Autowire('%env(HU_SPEAKER_JWT_SECRET)%')] string $huSecret,
     ): Response {
         // segurança: a senha tem que pertencer à unidade do painel
         if ($senha->getUnidade()?->getId() !== $painel->getUnidade()?->getId()) {
@@ -95,13 +93,25 @@ class PainelController extends AbstractController
 
         // 1) monta o texto falado
         $soletrada = trim((string) preg_replace('/(.)/u', '$1 ', $senha->getSenhaFormatada()));
-        $numeroLocal = trim((string) preg_replace('/(.)/u', '$1 ', str_pad((string) $senha->getNumeroLocal(), 2, '0', STR_PAD_LEFT)));
+        $numeroPad = str_pad((string) $senha->getNumeroLocal(), 2, '0', STR_PAD_LEFT);
+        $numeroLocal = trim((string) preg_replace('/(.)/u', '$1 ', $numeroPad));
         $nome = trim((string) ($senha->getNomeCliente() ?? ''));
 
         if ($nome !== '') {
-            $texto = sprintf('Atenção! %s. Senha %s. Compareça ao %s %s.', $nome, $soletrada, $senha->getLocal(), $numeroLocal);
+            $texto = sprintf(
+                'Atenção! %s. Senha %s. Compareça ao %s %s.',
+                $nome,
+                $soletrada,
+                $senha->getLocal(),
+                $numeroLocal,
+            );
         } else {
-            $texto = sprintf('Atenção pacientes! Senha %s. Compareça ao %s %s.', $soletrada, $senha->getLocal(), $numeroLocal);
+            $texto = sprintf(
+                'Atenção pacientes! Senha %s. Compareça ao %s %s.',
+                $soletrada,
+                $senha->getLocal(),
+                $numeroLocal,
+            );
         }
 
         // 2) assina o JWT HS256 (HU-Speaker exige claims sub + exp)

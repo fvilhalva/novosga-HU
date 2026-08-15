@@ -137,24 +137,17 @@ php bin/console doctrine:migrations:migrate -n
 php bin/console novosga:install
 ```
 
-**Caminho B — migrar os dados da 1.x → 2.3 (usado no HU):**
+**Caminho B — carregar os dados migrados da 1.x → 2.3 (usado no HU):**
 ```bash
-# 1) carrega o dump antigo num schema "legado"
-sed 's/public\./legado./g' backup_novosga.sql > legado.sql
-#    cria o schema "legado" + o role "novosga" (o dump 1.x tem "OWNER TO novosga")
-docker compose exec -T -e PGPASSWORD='!ChangeMe!' database psql -U app -d app -c \
-  "DROP SCHEMA IF EXISTS legado CASCADE; CREATE SCHEMA legado; DO \$\$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='novosga') THEN CREATE ROLE novosga; END IF; END \$\$;"
-#    importa o dump no schema legado
-docker compose exec -T -e PGPASSWORD='!ChangeMe!' database psql -U app -d app < legado.sql
-
-# 2) roda o script de migração (já inclui: fix de microssegundos + seed de contadores)
+# carrega o snapshot já convertido para o modelo 2.3 (data-only)
 docker compose exec -T -e PGPASSWORD='!ChangeMe!' database \
-  psql -U app -d app -v ON_ERROR_STOP=1 < migracao_1x_para_2.3.sql
+  psql -U app -d app -v ON_ERROR_STOP=1 < dados_migrados.sql
 ```
-> O `migracao_1x_para_2.3.sql` já corrige dois problemas que travavam a 2.3:
-> **(1)** remove microssegundos dos `created_at` (senão dá **500 no login**);
-> **(2)** semeia a tabela `contador` (senão dá **"Error updating ticket counter"**
-> na Triagem).
+> O `dados_migrados.sql` é um `pg_dump --data-only` da base 1.x **já migrada**,
+> então carrega direto por cima do schema criado pelas migrations (passo 3.6).
+> Os fixes que travavam a 2.3 já estão embutidos: **(1)** `created_at` sem
+> microssegundos (senão dá **500 no login**); **(2)** tabela `contador` semeada
+> (senão dá **"Error updating ticket counter"** na Triagem).
 
 ### 3.8 Subir o app
 ```bash
@@ -224,8 +217,8 @@ docker compose -f ~/Faculdade/estagio/HU-Speaker/docker-compose.yml logs -f
 
 | Sintoma | Causa | Correção |
 |--------|-------|----------|
-| Login dá **500** "Could not convert database value ... DateTimeImmutable" | `created_at` migrado com microssegundos | Já corrigido no `migracao_1x_para_2.3.sql` (seção 10.5); se ocorrer, rode o `date_trunc('second', ...)` nas colunas timestamp |
-| Triagem: **"Error updating ticket counter"** | Tabela `contador` sem linha para o serviço | Já corrigido no script (seção 10.6, semeia `contador` a partir de `servicos_unidades`) |
+| Login dá **500** "Could not convert database value ... DateTimeImmutable" | `created_at` migrado com microssegundos | Já embutido no `dados_migrados.sql`; se ocorrer, rode o `date_trunc('second', ...)` nas colunas timestamp |
+| Triagem: **"Error updating ticket counter"** | Tabela `contador` sem linha para o serviço | Já embutido no `dados_migrados.sql` (tabela `contador` semeada a partir de `servicos_unidades`) |
 | **connection timeout** na porta 5432 | PostgreSQL **nativo do Windows** brigando com o container | Usar **5434** (compose.override + `.env.local`) — passos 3.1 |
 | HU-Speaker **`{"detail":"Invalid token"}`** | `HU_SPEAKER_JWT_SECRET` ≠ `JWT_SECRET_KEY` | Igualar os segredos (passos 2.3 e 3.5) |
 | HU-Speaker **500 "Piper model not found"** | Modelo `.onnx` ausente | Baixar o modelo e `docker compose up -d --build` (passo 2.2) |

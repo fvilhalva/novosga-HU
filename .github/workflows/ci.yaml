@@ -8,28 +8,18 @@ on:
 
 env:
   APP_ENV: "test"
+  DATABASE_URL: "postgresql://postgres:dbpass@127.0.0.1:5432/novosga?serverVersion=16&charset=utf8"
 
 jobs:
   tests:
     runs-on: ubuntu-latest
     services:
-      mysql:
-        image: mysql:8
-        env:
-          MYSQL_DATABASE: novosga_test
-          MYSQL_ROOT_PASSWORD: dbpass
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 3306:3306
       postgres:
-        image: postgres:15
+        image: postgres:16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: dbpass
+          # base "novosga" + sufixo "_test" (dbname_suffix do when@test) = novosga_test
           POSTGRES_DB: novosga_test
         options: >-
           --health-cmd pg_isready
@@ -39,17 +29,12 @@ jobs:
         ports:
           - 5432:5432
 
-    strategy:
-      matrix:
-        dsn:
-          - "postgresql://postgres:dbpass@127.0.0.1:5432/novosga?serverVersion=15&charset=utf8"
-
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@2.37.1
         with:
           php-version: 8.2
-          extensions: ctype, iconv, intl, pdo, pdo_pgsql, mbstring, xml
+          extensions: ctype, iconv, intl, pdo, pdo_pgsql, mbstring, xml, zip, curl
 
       - name: Install dependencies
         run: composer install
@@ -63,7 +48,7 @@ jobs:
       - name: PHP Code Standards
         run: vendor/bin/phpcs
 
-      - name: PHP Code Analysis 
+      - name: PHP Code Analysis
         run: vendor/bin/phpstan
 
       - name: Yaml Lint
@@ -73,15 +58,9 @@ jobs:
 
       - name: Doctrine Migrations
         run: bin/console doctrine:migrations:migrate --no-interaction
-        env:
-          DATABASE_URL: ${{ matrix.dsn }}
 
       - name: Doctrine Fixtures
         run: bin/console doctrine:fixture:load --no-interaction --purge-exclusions view_atendimentos --purge-exclusions view_atendimentos_codificados
-        env:
-          DATABASE_URL: ${{ matrix.dsn }}
 
       - name: PHP Unit Tests
         run: vendor/bin/phpunit
-        env:
-          DATABASE_URL: ${{ matrix.dsn }}
