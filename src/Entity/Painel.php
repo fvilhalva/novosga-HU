@@ -34,6 +34,30 @@ class Painel implements PainelInterface
     #[ORM\Column(length: 36)]
     private ?string $publicId = null;
 
+    /**
+     * Chamada por voz ligada (senha + nome). Se falso, o painel não vocaliza.
+     */
+    #[ORM\Column(type: 'boolean', options: ['default' => true])]
+    private bool $vozAtiva = true;
+
+    /**
+     * Falar o nome do paciente. Se falso, vocaliza só a senha e o local.
+     */
+    #[ORM\Column(type: 'boolean', options: ['default' => true])]
+    private bool $falarNome = true;
+
+    /**
+     * Modelo de voz do HU-Speaker: "piper" ou "kokoro".
+     */
+    #[ORM\Column(length: 20, options: ['default' => 'piper'])]
+    private string $vozModelo = 'piper';
+
+    /**
+     * Velocidade da fala (length_scale do HU-Speaker): maior = mais devagar.
+     */
+    #[ORM\Column(type: 'float', options: ['default' => 1.6])]
+    private float $vozVelocidade = 1.6;
+
     public function __construct()
     {
         $this->servicos = new ArrayCollection();
@@ -113,6 +137,54 @@ class Painel implements PainelInterface
     public function setPublicId(?string $publicId): static
     {
         $this->publicId = $publicId;
+
+        return $this;
+    }
+
+    public function isVozAtiva(): bool
+    {
+        return $this->vozAtiva;
+    }
+
+    public function setVozAtiva(bool $vozAtiva): static
+    {
+        $this->vozAtiva = $vozAtiva;
+
+        return $this;
+    }
+
+    public function isFalarNome(): bool
+    {
+        return $this->falarNome;
+    }
+
+    public function setFalarNome(bool $falarNome): static
+    {
+        $this->falarNome = $falarNome;
+
+        return $this;
+    }
+
+    public function getVozModelo(): string
+    {
+        return $this->vozModelo;
+    }
+
+    public function setVozModelo(string $vozModelo): static
+    {
+        $this->vozModelo = $vozModelo;
+
+        return $this;
+    }
+
+    public function getVozVelocidade(): float
+    {
+        return $this->vozVelocidade;
+    }
+
+    public function setVozVelocidade(float $vozVelocidade): static
+    {
+        $this->vozVelocidade = $vozVelocidade;
 
         return $this;
     }

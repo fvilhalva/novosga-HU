@@ -91,13 +91,19 @@ class PainelController extends AbstractController
             throw $this->createNotFoundException();
         }
 
+        // voz desativada neste painel: nada a vocalizar
+        if (!$painel->isVozAtiva()) {
+            return new Response('', Response::HTTP_NO_CONTENT);
+        }
+
         // 1) monta o texto falado
         $soletrada = trim((string) preg_replace('/(.)/u', '$1 ', $senha->getSenhaFormatada()));
         $numeroPad = str_pad((string) $senha->getNumeroLocal(), 2, '0', STR_PAD_LEFT);
         $numeroLocal = trim((string) preg_replace('/(.)/u', '$1 ', $numeroPad));
         $nome = trim((string) ($senha->getNomeCliente() ?? ''));
 
-        if ($nome !== '') {
+        // fala o nome só se houver nome E a opção "falar nome" estiver ligada
+        if ($nome !== '' && $painel->isFalarNome()) {
             $texto = sprintf(
                 'Atenção! %s. Senha %s. Compareça ao %s %s.',
                 $nome,
@@ -129,10 +135,15 @@ class PainelController extends AbstractController
 
         $headers = ['Authorization' => 'Bearer ' . $jwt];
 
-        // 3) sintetiza
+        // 3) sintetiza (modelo e velocidade conforme a configuração do painel)
         $syn = $http->request('POST', $huUrl . '/speak/synthesize', [
             'headers' => $headers,
-            'json' => ['text' => $texto, 'language' => 'pt_BR', 'length_scale' => 1.6],
+            'json' => [
+                'text' => $texto,
+                'language' => 'pt_BR',
+                'length_scale' => $painel->getVozVelocidade(),
+                'model' => $painel->getVozModelo(),
+            ],
         ])->toArray();
 
         // 4) baixa o wav e repassa (proxy) — segredo nunca sai do servidor
