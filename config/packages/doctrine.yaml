@@ -1,17 +1,33 @@
 doctrine:
     dbal:
-        url: '%env(resolve:DATABASE_URL)%'
-
-        # IMPORTANT: You MUST configure your server version,
-        # either here or in the DATABASE_URL env var (see .env file)
-        #server_version: '16'
-
-        profiling_collect_backtrace: '%kernel.debug%'
-        use_savepoints: true
+        default_connection: default
 
         types:
             datetime: App\Doctrine\Types\UTCDateTimeType
             datetime_immutable: App\Doctrine\Types\UTCDateTimeImmutableType
+
+        connections:
+            default:
+                url: '%env(resolve:DATABASE_URL)%'
+                # IMPORTANT: You MUST configure your server version,
+                # either here or in the DATABASE_URL env var (see .env file)
+                #server_version: '16'
+                profiling_collect_backtrace: '%kernel.debug%'
+                use_savepoints: true
+
+            # Conexão SOMENTE LEITURA com o AGHU (integração de agenda).
+            # Nunca escrevemos nesta conexão. Valores reais em .env.local.
+            # server_version fixo evita que o Doctrine conecte no boot só para
+            # detectar a versão (mantém a conexão preguiçosa/segura).
+            aghu:
+                driver: pdo_pgsql
+                host: '%env(AGHU_DB_HOST)%'
+                port: '%env(int:AGHU_DB_PORT)%'
+                dbname: '%env(AGHU_DB_NAME)%'
+                user: '%env(AGHU_DB_USER)%'
+                password: '%env(AGHU_DB_PASSWORD)%'
+                charset: utf8
+                server_version: '16'
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -39,8 +55,10 @@ doctrine:
 when@test:
     doctrine:
         dbal:
-            # "TEST_TOKEN" is typically set by ParaTest
-            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            connections:
+                default:
+                    # "TEST_TOKEN" is typically set by ParaTest
+                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
 
 when@prod:
     doctrine:

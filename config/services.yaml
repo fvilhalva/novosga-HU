@@ -9,6 +9,8 @@ parameters:
     title: 'NovoSGA CE'
     mercure_url: '%env(MERCURE_PUBLIC_URL)%'
     app.build_number: '%env(default::APP_BUILD_NUMBER)%'
+    # Schema do AGHU (usado para schema-qualificar as tabelas na leitura).
+    aghu.schema: '%env(AGHU_DB_SCHEMA)%'
     # https://symfony.com/doc/current/performance.html
     .container.dumper.inline_factories: true
 
@@ -84,6 +86,11 @@ services:
         arguments:
             $baseUrl: '%env(HU_SPEAKER_URL)%'
             $jwtSecret: '%env(HU_SPEAKER_JWT_SECRET)%'
+
+    # Integração AGHU (esqueleto): bindings padrão das costuras SOURCE e SINK.
+    # Trocar por implementações reais (DBAL read-only / escrita nativa) depois.
+    App\Aghu\Source\AghuAgendaSourceInterface: '@App\Aghu\Source\StubAghuAgendaSource'
+    App\Aghu\Sink\AmbulatorioCallSinkInterface: '@App\Aghu\Sink\LoggingCallSink'
 
 
 when@test:
