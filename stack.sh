@@ -102,6 +102,7 @@ setup_huspeaker() {
     fi
     [ -f .env ] || die "HU-Speaker/.env não existe (precisa de JWT_SECRET_KEY)"
     log "Subindo HU-Speaker (build)..."
+    log "  1o build baixa torch (CPU) + modelo Kokoro (~centenas de MB) — pode demorar."
     docker compose up -d --build
   )
 }
@@ -237,12 +238,24 @@ cmd_check() {
 
   log "Nível 2 - NovoSGA autentica e sintetiza (servidor->servidor)"
   check_secret || warn "segredo divergente - o teste abaixo deve falhar"
-  local secret jwt resp
+  local secret jwt resp model ok_all=1
   secret=$(grep -hE '^HU_SPEAKER_JWT_SECRET=' "$NOVOSGA_DIR/.env" "$NOVOSGA_DIR/.env.local" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"'"'"' \r')
   jwt=$(SECRET="$secret" php -r '$s=getenv("SECRET");$b=fn($d)=>rtrim(strtr(base64_encode($d),"+/","-_"),"=");$h=$b(json_encode(["alg"=>"HS256","typ"=>"JWT"]));$n=time();$p=$b(json_encode(["sub"=>"novosga-service","source_system"=>"novosga","iat"=>$n,"exp"=>$n+120]));echo "$h.$p.".$b(hash_hmac("sha256","$h.$p",$s,true));')
-  resp=$(curl -s -m 30 -X POST "${HU_URL}/speak/synthesize" -H "Authorization: Bearer $jwt" -H "Content-Type: application/json" -d '{"text":"teste de voz","language":"pt_BR","length_scale":1.0}')
-  echo "  resposta: $resp"
-  echo "$resp" | grep -q '"status":"completed"' && ok "Integração de voz OK" || die "Falha na síntese (veja a resposta acima)"
+
+  # Testa cada modelo de voz disponível.
+  for model in piper kokoro; do
+    log "  testando modelo: ${model}"
+    resp=$(curl -s -m 60 -X POST "${HU_URL}/speak/synthesize" -H "Authorization: Bearer $jwt" -H "Content-Type: application/json" -d "{\"text\":\"teste de voz\",\"language\":\"pt_BR\",\"length_scale\":1.0,\"model\":\"${model}\"}")
+    echo "    resposta: $resp"
+    if echo "$resp" | grep -q '"status":"completed"'; then
+      ok "  modelo ${model} OK"
+    else
+      warn "  modelo ${model} falhou (veja a resposta acima)"
+      ok_all=0
+    fi
+  done
+
+  [ "$ok_all" -eq 1 ] && ok "Integração de voz OK (todos os modelos)" || die "Ao menos um modelo falhou na síntese"
 }
 
 # --------------------------------------------------------------------------

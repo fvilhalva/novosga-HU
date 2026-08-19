@@ -49,16 +49,24 @@ final class HuSpeakerClient
 
     /**
      * Passo 1: sintetiza o texto. Retorna o id da síntese.
+     *
+     * @param string|null $model Modelo de voz ("piper"/"kokoro"). null usa o
+     *                           padrão do HU-Speaker.
      */
-    public function synthesize(string $text, float $lengthScale = 1.6): string
+    public function synthesize(string $text, float $lengthScale = 1.6, ?string $model = null): string
     {
+        $payload = [
+            'text'         => $text,
+            'language'     => 'pt_BR',
+            'length_scale' => $lengthScale,
+        ];
+        if ($model !== null && $model !== '') {
+            $payload['model'] = $model;
+        }
+
         $response = $this->client->request('POST', $this->baseUrl . '/speak/synthesize', [
             'auth_bearer' => $this->token(),
-            'json'        => [
-                'text'         => $text,
-                'language'     => 'pt_BR',
-                'length_scale' => $lengthScale,
-            ],
+            'json'        => $payload,
             'timeout'     => 15,
         ]);
 
@@ -81,8 +89,8 @@ final class HuSpeakerClient
     /**
      * Atalho: sintetiza e já devolve os bytes do WAV.
      */
-    public function speak(string $text, float $lengthScale = 1.0): string
+    public function speak(string $text, float $lengthScale = 1.0, ?string $model = null): string
     {
-        return $this->download($this->synthesize($text, $lengthScale));
+        return $this->download($this->synthesize($text, $lengthScale, $model));
     }
 }
