@@ -153,6 +153,8 @@
         (function () {
             const btn = document.getElementById('btn-testar-voz');
             if (!btn) { return; }
+            const ativaEl = document.getElementById('{{ form.vozAtiva.vars.id }}');
+            const nomeEl = document.getElementById('{{ form.falarNome.vars.id }}');
             const modeloEl = document.getElementById('{{ form.vozModelo.vars.id }}');
             const velEl = document.getElementById('{{ form.vozVelocidade.vars.id }}');
             const audio = document.getElementById('voz-teste-audio');
@@ -160,10 +162,20 @@
             const baseUrl = '{{ path('painel_voz_teste') }}';
 
             btn.addEventListener('click', function () {
+                // "Ativar voz" desmarcado: na chamada real nada é falado.
+                if (ativaEl && !ativaEl.checked) {
+                    audio.pause();
+                    audio.classList.add('d-none');
+                    status.textContent = 'Voz desativada — nada será falado na chamada.';
+                    return;
+                }
+
                 const modelo = modeloEl ? modeloEl.value : 'piper';
                 const vel = velEl ? velEl.value : '1.6';
+                const falarNome = nomeEl ? nomeEl.checked : true;
                 const url = baseUrl + '?model=' + encodeURIComponent(modelo)
                     + '&velocidade=' + encodeURIComponent(vel)
+                    + '&falar_nome=' + (falarNome ? '1' : '0')
                     + '&t=' + Date.now();
 
                 status.textContent = 'Gerando áudio…';
@@ -171,7 +183,10 @@
                 audio.src = url;
                 audio.classList.remove('d-none');
                 audio.play()
-                    .then(function () { status.textContent = 'Tocando (' + modelo + ', ' + vel + ')'; })
+                    .then(function () {
+                        status.textContent = 'Tocando (' + modelo + ', ' + vel
+                            + (falarNome ? ', com nome' : ', sem nome') + ')';
+                    })
                     .catch(function (e) { status.textContent = 'Falha: ' + e.message; })
                     .finally(function () { btn.disabled = false; });
             });

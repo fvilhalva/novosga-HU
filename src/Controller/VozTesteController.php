@@ -30,14 +30,18 @@ class VozTesteController extends AbstractController
         // mesmo intervalo aceito pelo HU-Speaker
         $velocidade = max(0.5, min(2.0, $velocidade));
 
-        $nome = trim((string) $request->query->get('nome', 'Maria da Silva'));
-        if ($nome === '') {
-            $nome = 'Maria da Silva';
+        // "falar nome" espelha a opção do painel: com nome vs. frase alternativa.
+        $falarNome = $request->query->getBoolean('falar_nome', true);
+        if ($falarNome) {
+            $nome = trim((string) $request->query->get('nome', 'Maria da Silva'));
+            if ($nome === '') {
+                $nome = 'Maria da Silva';
+            }
+            $nome = mb_substr($nome, 0, 80); // limite defensivo
+            $texto = sprintf('Atenção! %s. Senha A zero zero um. Compareça ao guichê dois.', $nome);
+        } else {
+            $texto = 'Atenção pacientes! Senha A zero zero um. Compareça ao guichê dois.';
         }
-        // limite defensivo de tamanho
-        $nome = mb_substr($nome, 0, 80);
-
-        $texto = sprintf('Atenção! %s. Senha A zero zero um. Compareça ao guichê dois.', $nome);
 
         try {
             $wav = $huSpeaker->speak($texto, $velocidade, $modelo);
