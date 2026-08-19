@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Form\Extension;
 
-use App\Entity\Painel;
 use Novosga\PanelBundle\Form\PainelFormType;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -18,7 +17,7 @@ use Symfony\Component\Validator\Constraints\LessThanOrEqual;
  * Estende o formulário de painel do NovoSGA (vendor) acrescentando as opções
  * de chamada por voz — sem modificar o bundle original.
  *
- * Os campos são mapeados diretamente na entidade {@see Painel}, então o
+ * Os campos são mapeados diretamente na entidade {@see \App\Entity\Painel}, então o
  * próprio save() do controller do vendor persiste os valores.
  */
 final class PainelFormTypeExtension extends AbstractTypeExtension
